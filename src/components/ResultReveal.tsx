@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import RarityBadge from "./RarityBadge";
 import { useSlotStore } from "@/lib/slotStore";
-import MintMemeButton from "./mint/MintMemeButton";
+import PonsV2LaunchButton from "./launch/PonsV2LaunchButton";
 
 async function downloadImage(url: string, filename: string) {
   try {
@@ -40,7 +40,6 @@ export default function ResultReveal() {
     result,
     aiStatus,
     aiImageUrl,
-    generationId,
     aiFallback,
     aiError,
     savedThisSpin,
@@ -147,13 +146,10 @@ export default function ResultReveal() {
 
               <div className="mt-5 grid grid-cols-2 gap-2">
                 {isAi && (
-                  <MintMemeButton
-                    generationId={generationId}
+                  <PonsV2LaunchButton
                     imageUrl={displayImage}
-                    name={result.name}
-                    character={result.characterId.toUpperCase()}
-                    mutation={result.mutationId.replace(/-/g, " ").toUpperCase()}
-                    world={result.styleId.toUpperCase()}
+                    suggestedName={result.name}
+                    description={`${result.comboDisplay}. ${result.description}`}
                   />
                 )}
                 <button

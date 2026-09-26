@@ -1,11 +1,9 @@
 "use client";
 
-import CreationCard from "@/components/CreationCard";
 import InteractiveSlotMachine from "@/components/meme-slot/InteractiveSlotMachine";
 import MemeBuilder from "@/components/meme-slot/MemeBuilder";
 import ResultReveal from "@/components/ResultReveal";
 import Toast from "@/components/Toast";
-import { CREATIONS } from "@/data/creations";
 
 const HOW_IT_WORKS = [
   { n: "01", title: "Pick a Character", desc: "Lock your legend or let fate decide." },
@@ -15,8 +13,6 @@ const HOW_IT_WORKS = [
 ];
 
 export default function HomePage() {
-  const latest = [...CREATIONS].sort((a, b) => a.daysAgo - b.daysAgo);
-
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6">
       {/* ------------------------------- HERO ------------------------------- */}
@@ -86,23 +82,6 @@ export default function HomePage() {
 
       {/* --------------------------- BUILDER ------------------------------- */}
       <MemeBuilder />
-
-      {/* ------------------------- LATEST CREATIONS ------------------------- */}
-      <section className="pb-20">
-        <div className="mb-4 flex items-baseline justify-between">
-          <h3 className="font-display text-sm tracking-[0.25em] text-black/70">
-            LATEST CREATIONS
-          </h3>
-          <a href="/creations" className="text-xs font-bold tracking-[0.2em] text-black/45 hover:text-black">
-            VIEW ALL →
-          </a>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {latest.map((c) => (
-            <CreationCard key={c.id} creation={c} />
-          ))}
-        </div>
-      </section>
 
       <ResultReveal />
       <Toast />
