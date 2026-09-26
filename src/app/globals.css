@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --neon: #39ff14;
+  --electric: #2e9bff;
+  --hotpink: #ff2d8a;
+  --gold: #ffc53d;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #fafafa;
+  color: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* hide scrollbars on horizontal selectors */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* fixed custom scrollbar: visible even when the OS uses overlay scrollbars */
+.selector-track {
+  position: relative;
+  height: 9px;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.09);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
+  touch-action: none;
+}
+.selector-thumb {
+  position: absolute;
+  inset-block: 1px;
+  min-width: 48px;
+  cursor: grab;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #55ff6a, #22d3ee, #3b82f6);
+  box-shadow: 0 1px 4px rgba(34, 211, 238, 0.35);
+}
+.selector-thumb:active {
+  cursor: grabbing;
+}
+
+/* legendary / secret celebration */
+@keyframes slot-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-4px, 2px); }
+  40% { transform: translate(4px, -2px); }
+  60% { transform: translate(-3px, -1px); }
+  80% { transform: translate(3px, 1px); }
+}
+.slot-shake {
+  animation: slot-shake 0.5s ease-in-out 2;
+}
+
+@keyframes holo-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.holo-text {
+  background: linear-gradient(90deg, #39ff14, #2e9bff, #ff2d8a, #ffc53d, #39ff14);
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: holo-shift 3s linear infinite;
+}
+.holo-border {
+  background: linear-gradient(90deg, #39ff14, #2e9bff, #ff2d8a, #ffc53d, #39ff14);
+  background-size: 300% 100%;
+  animation: holo-shift 3s linear infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-120px) scale(0.4); opacity: 0; }
+}
+.particle {
+  animation: float-up 1.2s ease-out forwards;
+}
+
+@keyframes flash-fade {
+  0% { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+.flash-fade {
+  animation: flash-fade 0.45s ease-out forwards;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+.pulse-dot { animation: pulse-dot 1s ease-in-out infinite; }
+
+/* ---------------- machine neon lights ---------------- */
+@keyframes neon-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.75; }
+}
+.neon-strip { animation: neon-pulse 3.2s ease-in-out infinite; }
+.neon-strip-fast { animation: neon-pulse 0.5s ease-in-out infinite; }
+
+@keyframes crown-glow {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(255,197,61,0.55)); }
+  50% { filter: drop-shadow(0 0 11px rgba(255,197,61,0.95)); }
+}
+.crown-glow { animation: crown-glow 2.4s ease-in-out infinite; }

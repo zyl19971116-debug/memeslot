@@ -1,0 +1,34 @@
+[
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_pair__2026-09-22T08-25-53.png", "dst": "public\\assets\\meme-slot\\mutations\\laser-eyes.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_stack_2026-09-22T08-26-19.png", "dst": "public\\assets\\meme-slot\\mutations\\gold.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_cute__2026-09-22T08-26-43.png", "dst": "public\\assets\\meme-slot\\mutations\\zombie.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_golde_2026-09-22T08-27-07.png", "dst": "public\\assets\\meme-slot\\mutations\\king.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_swirl_2026-09-22T08-27-32.png", "dst": "public\\assets\\meme-slot\\mutations\\fire.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_trans_2026-09-22T08-27-56.png", "dst": "public\\assets\\meme-slot\\mutations\\ice.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_white_2026-09-22T08-28-19.png", "dst": "public\\assets\\meme-slot\\mutations\\angel.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_pair__2026-09-22T08-28-41.png", "dst": "public\\assets\\meme-slot\\mutations\\demon.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_glowi_2026-09-22T08-29-03.png", "dst": "public\\assets\\meme-slot\\mutations\\radioactive.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\mutations\\3D_glossy_emblem_icon__a_brill_2026-09-22T08-29-27.png", "dst": "public\\assets\\meme-slot\\mutations\\diamond.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-29-59.png", "dst": "public\\assets\\meme-slot\\styles\\cyber.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-30-01.png", "dst": "public\\assets\\meme-slot\\styles\\space.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-30-28.png", "dst": "public\\assets\\meme-slot\\styles\\street.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-30-27.png", "dst": "public\\assets\\meme-slot\\styles\\pixel.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-30-51.png", "dst": "public\\assets\\meme-slot\\styles\\anime.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-30-53.png", "dst": "public\\assets\\meme-slot\\styles\\retro.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-31-30.png", "dst": "public\\assets\\meme-slot\\styles\\dark.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-31-26.png", "dst": "public\\assets\\meme-slot\\styles\\cute.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-31-57.png", "dst": "public\\assets\\meme-slot\\styles\\degen.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+  { "src": "_gen\\styles\\3D_glossy_glass_orb_diorama__a_2026-09-22T08-31-53.png", "dst": "public\\assets\\meme-slot\\styles\\future.png", "removeBg": true, "bgThresh": 42, "maxSize": 512 },
+
+  { "src": "_gen\\results\\Keep_this_exact_character_desi_2026-09-22T08-32-27.png", "dst": "public\\assets\\meme-slot\\results\\legendary-pepe.png", "maxSize": 1024 },
+  { "src": "_gen\\results\\Keep_this_exact_character_desi_2026-09-22T08-32-55.png", "dst": "public\\assets\\meme-slot\\results\\legendary-doge.png", "maxSize": 1024 },
+  { "src": "_gen\\results\\Keep_this_exact_character_desi_2026-09-22T08-33-18.png", "dst": "public\\assets\\meme-slot\\results\\legendary-pengu.png", "maxSize": 1024 },
+  { "src": "_gen\\results\\Keep_this_exact_character_desi_2026-09-22T08-33-43.png", "dst": "public\\assets\\meme-slot\\results\\cyber-laser-pepe.png", "maxSize": 1024 },
+  { "src": "_gen\\results\\A_surreal_funny_mutant_mashup__2026-09-22T08-34-15.png", "dst": "public\\assets\\meme-slot\\results\\mutant-random.png", "removeBg": true, "bgThresh": 42, "maxSize": 768 },
+
+  { "src": "_gen\\system\\A_minimal_premium_placeholder__2026-09-22T08-34-42.png", "dst": "public\\assets\\meme-slot\\system\\meme-placeholder.png", "removeBg": true, "bgThresh": 30, "maxSize": 512 },
+
+  { "src": "_gen\\marketing\\Keep_this_exact_character_desi_2026-09-22T08-35-12.png", "dst": "public\\assets\\meme-slot\\marketing\\astronaut-doge.png", "maxSize": 1024 },
+  { "src": "_gen\\marketing\\A_group_poster_of_chibi_3D_glo_2026-09-22T08-35-33.png", "dst": "public\\assets\\meme-slot\\marketing\\meme-group.png", "maxSize": 1024 }
+]

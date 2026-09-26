@@ -1,0 +1,19 @@
+[
+  {
+    "src": "C:\\Users\\21194\\WorkBuddy\\2026-09-21-23-01-50\\_gen\\machine\\Product_render_of_a_premium_mo_2026-09-22T08-14-28.png",
+    "dst": "C:\\Users\\21194\\WorkBuddy\\2026-09-21-23-01-50\\public\\assets\\meme-slot\\machine\\meme-slot-machine.png",
+    "cropBottom": 0.09,
+    "removeBg": true,
+    "bgThresh": 35,
+    "detectWindows": true,
+    "maxSize": 1024
+  },
+  {
+    "src": "C:\\Users\\21194\\WorkBuddy\\2026-09-21-23-01-50\\_gen\\machine\\Product_render_of_a_premium_mo_2026-09-22T08-14-53.png",
+    "dst": "C:\\Users\\21194\\WorkBuddy\\2026-09-21-23-01-50\\public\\assets\\meme-slot\\machine\\meme-slot-machine-empty.png",
+    "cropBottom": 0.09,
+    "removeBg": true,
+    "bgThresh": 35,
+    "maxSize": 1024
+  }
+]

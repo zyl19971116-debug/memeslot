@@ -1,0 +1,27 @@
+node_modules
+.next
+.next-build
+.next-corrupt-*
+out
+*.tsbuildinfo
+next-env.d.ts
+_inspect*.txt
+_chk*.txt
+_qa*.txt
+_diag.js
+_server*.log
+_test_payload.json
+.workbuddy/
+
+# generated contract/build outputs
+artifacts/
+cache/
+typechain-types/
+
+# runtime-generated meme outputs
+public/generated/
+
+# environment / secrets
+.env
+.env.local
+.env*.local
