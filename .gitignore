@@ -11,6 +11,8 @@ _qa*.txt
 _diag.js
 _server*.log
 _test_payload.json
+_*.log
+_*.txt
 .workbuddy/
 
 # generated contract/build outputs
