@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import RarityBadge from "./RarityBadge";
 import { useSlotStore } from "@/lib/slotStore";
-import PonsV2LaunchButton from "./launch/PonsV2LaunchButton";
+import DirectTokenLaunchButton from "./launch/DirectTokenLaunchButton";
 
 async function downloadImage(url: string, filename: string) {
   try {
@@ -146,7 +146,7 @@ export default function ResultReveal() {
 
               <div className="mt-5 grid grid-cols-2 gap-2">
                 {isAi && (
-                  <PonsV2LaunchButton
+                  <DirectTokenLaunchButton
                     imageUrl={displayImage}
                     suggestedName={result.name}
                     description={`${result.comboDisplay}. ${result.description}`}

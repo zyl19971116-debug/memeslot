@@ -12,6 +12,7 @@
     "contracts:test": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat test",
     "deploy:robinhood:testnet": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deploy.ts --network robinhoodTestnet",
     "deploy:robinhood": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deploy.ts --network robinhood",
+    "deploy:token-launcher:robinhood": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deploy-token-launcher.ts --network robinhood",
     "verify:robinhood:testnet": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat verify --network robinhoodTestnet",
     "verify:robinhood": "cross-env TS_NODE_PROJECT=tsconfig.hardhat.json hardhat verify --network robinhood"
   },
