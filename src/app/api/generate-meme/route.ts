@@ -10,6 +10,10 @@ import { RATE_LIMIT_PER_MINUTE } from "@/lib/ai/config";
  * The browser never touches fal.ai or FAL_KEY — everything happens here.
  */
 
+/* AI image generation takes ~30s — allow up to 60s on serverless (Vercel). */
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 /* ------------------------------ rate limiting ----------------------------- */
 
 const hits = new Map<string, number[]>();

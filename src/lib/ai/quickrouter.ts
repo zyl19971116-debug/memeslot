@@ -105,21 +105,33 @@ function extractImageFromContent(content: string): string | null {
   return hosted ? hosted[1] : null;
 }
 
-/** Persist a data-URI image into /public/generated and return its public path. */
+/**
+ * Persist a data-URI image into /public/generated and return its public path.
+ * Falls back to returning the data URI itself when the filesystem is
+ * read-only (e.g. Vercel serverless) or the write fails — the frontend
+ * can render data URIs directly either way.
+ */
 async function persistDataUri(dataUri: string): Promise<string> {
-  const nodeFs = await import("node:fs/promises");
-  const nodePath = await import("node:path");
-  const dir = nodePath.join(process.cwd(), PUBLIC_ASSET_ROOT, "generated");
-  await nodeFs.mkdir(dir, { recursive: true });
+  try {
+    const nodeFs = await import("node:fs/promises");
+    const nodePath = await import("node:path");
+    const dir = nodePath.join(process.cwd(), PUBLIC_ASSET_ROOT, "generated");
+    await nodeFs.mkdir(dir, { recursive: true });
 
-  const ext = dataUri.startsWith("data:image/png") ? "png" : "jpg";
-  const file = `meme-${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
-  const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
-  await nodeFs.writeFile(
-    nodePath.join(dir, file),
-    Buffer.from(base64, "base64")
-  );
-  return `/generated/${file}`;
+    const ext = dataUri.startsWith("data:image/png") ? "png" : "jpg";
+    const file = `meme-${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
+    const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
+    await nodeFs.writeFile(
+      nodePath.join(dir, file),
+      Buffer.from(base64, "base64")
+    );
+    return `/generated/${file}`;
+  } catch (err) {
+    console.log(
+      `[MEME AI] Could not persist image to disk (${err instanceof Error ? err.message : err}); returning inline data URI.`
+    );
+    return dataUri;
+  }
 }
 
 export interface QuickRouterResult {

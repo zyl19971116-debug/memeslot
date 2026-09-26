@@ -65,9 +65,16 @@ export async function createLocalComposite(opts: {
     .jpeg({ quality: 92, mozjpeg: true })
     .toBuffer();
 
-  const dir = path.join(process.cwd(), PUBLIC_ASSET_ROOT, "generated");
-  await mkdir(dir, { recursive: true });
-  const filename = `meme-local-${Date.now()}-${Math.floor(Math.random() * 1e6)}.jpg`;
-  await writeFile(path.join(dir, filename), output);
-  return `/generated/${filename}`;
+  // Persist to disk when possible; on read-only filesystems (Vercel
+  // serverless) fall back to an inline data URI which the frontend can
+  // render and store just as well.
+  try {
+    const dir = path.join(process.cwd(), PUBLIC_ASSET_ROOT, "generated");
+    await mkdir(dir, { recursive: true });
+    const filename = `meme-local-${Date.now()}-${Math.floor(Math.random() * 1e6)}.jpg`;
+    await writeFile(path.join(dir, filename), output);
+    return `/generated/${filename}`;
+  } catch {
+    return `data:image/jpeg;base64,${output.toString("base64")}`;
+  }
 }
