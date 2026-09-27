@@ -7,8 +7,9 @@ import { CHARACTERS } from "@/data/characters";
 import { MUTATIONS } from "@/data/mutations";
 import { STYLES } from "@/data/styles";
 import { PLACEHOLDER_IMAGE, type Rarity } from "@/data/base";
-import { usePublicClient } from "wagmi";
+import { useAccount, usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { directLauncherAbi, directLauncherAddress, isDirectLauncherConfigured } from "@/lib/contracts/directLauncher";
 import { ROBINHOOD_EXPLORER, robinhoodChain } from "@/lib/web3/robinhoodChain";
 
@@ -24,10 +25,10 @@ const HIDDEN_LAUNCHED_TOKENS = new Set([
   "0x5f54c20eae92e06497255cfa05ce1a75dd2648e9",
 ]);
 
-function LaunchedTokens() {
+function LaunchedTokens({ creator, title = "LAUNCHED TOKENS", description = "All tradeable tokens published through MEME SLOT on Robinhood Chain." }: { creator?: `0x${string}`; title?: string; description?: string }) {
   const client = usePublicClient({ chainId: robinhoodChain.id });
   const query = useQuery({
-    queryKey: ["launched-tokens-public"],
+    queryKey: ["launched-tokens", creator ?? "all"],
     enabled: Boolean(client && isDirectLauncherConfigured),
     queryFn: async () => {
       if (!client) return [];
@@ -39,6 +40,7 @@ function LaunchedTokens() {
           address: directLauncherAddress,
           abi: directLauncherAbi,
           eventName: "TokenLaunched",
+          ...(creator ? { args: { creator } } : {}),
           fromBlock,
           toBlock,
         });
@@ -70,7 +72,7 @@ function LaunchedTokens() {
   return (
     <section className="mb-14">
       <div className="flex items-end justify-between gap-4">
-        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">LAUNCHED TOKENS</h1><p className="mt-2 text-sm text-black/50">All tradeable tokens published through MEME SLOT on Robinhood Chain.</p></div>
+        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">{title}</h1><p className="mt-2 text-sm text-black/50">{description}</p></div>
         <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-bold tracking-[0.16em] text-white"><span className="text-[#39ff14]">●</span> LIVE ONCHAIN</span>
       </div>
       {query.isLoading ? (
@@ -99,6 +101,8 @@ function LaunchedTokens() {
 
 export default function CollectionPage() {
   const discoveries = useDiscoveryStore((s) => s.discoveries);
+  const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("ALL");
   const [mounted, setMounted] = useState(false);
 
@@ -115,11 +119,12 @@ export default function CollectionPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <LaunchedTokens />
+      <div className="mb-10 border-t border-black/10 pt-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY CREATIONS</h1>
+          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY WALLET</h1>
           <p className="mt-2 text-sm text-black/50">
-            Saved locally in your browser. No account required.
+            Tokens launched by this wallet and memes saved to your collection.
           </p>
         </div>
         <div className="rounded-2xl border border-black/10 bg-white px-5 py-3 text-center shadow-card">
@@ -129,6 +134,15 @@ export default function CollectionPage() {
           </div>
         </div>
       </div>
+
+      {!isConnected || !address ? (
+        <button onClick={openConnectModal} className="mt-8 w-full rounded-3xl border border-dashed border-black/15 bg-white py-16 text-sm font-bold tracking-[0.14em]">CONNECT WALLET TO VIEW YOUR TOKENS &amp; MEMES</button>
+      ) : (
+        <>
+          <div className="mt-10">
+            <LaunchedTokens creator={address} title="MY LAUNCHED TOKENS" description="Tradeable tokens published by the connected wallet." />
+          </div>
+          <h2 className="mt-4 font-display text-2xl tracking-tight">SAVED MEMES</h2>
 
       <div className="no-scrollbar mt-8 flex gap-2 overflow-x-auto">
         {FILTERS.map((f) => (
@@ -198,6 +212,9 @@ export default function CollectionPage() {
           ))}
         </div>
       )}
+        </>
+      )}
+      </div>
     </div>
   );
 }
