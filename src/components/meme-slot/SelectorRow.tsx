@@ -20,6 +20,10 @@ const ACCENTS: Record<RowAccent, { number: string; underline: string }> = {
   },
 };
 
+// Keep every selector's custom scrollbar visually consistent even though the
+// rows contain different card counts and card widths.
+const SCROLL_THUMB_PERCENT = 70;
+
 interface SelectorRowProps {
   index: string;
   title: string;
@@ -53,7 +57,7 @@ export default function SelectorRow({
     if (!el) return;
     const scrollable = el.scrollWidth > el.clientWidth + 8;
     setCanScroll(scrollable);
-    const thumb = scrollable ? Math.max(18, (el.clientWidth / el.scrollWidth) * 100) : 100;
+    const thumb = scrollable ? SCROLL_THUMB_PERCENT : 100;
     const progress = el.scrollWidth === el.clientWidth ? 0 : el.scrollLeft / (el.scrollWidth - el.clientWidth);
     setScrollMetrics({ thumb, left: progress * (100 - thumb) });
   }, []);
