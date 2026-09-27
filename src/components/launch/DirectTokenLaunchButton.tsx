@@ -63,6 +63,9 @@ export default function DirectTokenLaunchButton({ imageUrl, suggestedName, descr
         chainId: robinhoodChain.id,
         args: [name.trim(), symbol.trim().toUpperCase(), absoluteLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
         value,
+        // Robinhood Wallet can stall while estimating this atomic token + pool
+        // creation call. The official RPC estimates ~6.3m gas; keep headroom.
+        gas: 8_200_000n,
       });
       setStatus("CREATING TOKEN & POOL");
       if (!publicClient) throw new Error("Robinhood Chain RPC unavailable.");
