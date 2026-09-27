@@ -8,6 +8,7 @@
  */
 import { GENERATION_TIMEOUT_MS, QUICKROUTER_BASE_URL, QUICKROUTER_IMAGE_MODEL, PUBLIC_ASSET_ROOT } from "./config";
 import { ProxyAgent, fetch as undiciFetch } from "undici";
+import { put } from "@vercel/blob";
 
 /* ------------------------------------------------------------------ */
 /* proxy-aware fetch                                                   */
@@ -112,20 +113,39 @@ function extractImageFromContent(content: string): string | null {
  * can render data URIs directly either way.
  */
 async function persistDataUri(dataUri: string): Promise<string> {
+  const contentType = dataUri.slice(5, dataUri.indexOf(";")) || "image/jpeg";
+  const ext = contentType.includes("png") ? "png" : "jpg";
+  const file = `generated/meme-${Date.now()}-${crypto.randomUUID()}.${ext}`;
+  const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
+  const image = Buffer.from(base64, "base64");
+
+  // Production uses Vercel Blob so every launched token receives a compact,
+  // durable public logo URL instead of expensive base64 contract calldata.
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      const blob = await put(file, image, {
+        access: "public",
+        contentType,
+        addRandomSuffix: false,
+      });
+      return blob.url;
+    } catch (err) {
+      console.log(`[MEME AI] Blob upload failed: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+
   try {
     const nodeFs = await import("node:fs/promises");
     const nodePath = await import("node:path");
     const dir = nodePath.join(process.cwd(), PUBLIC_ASSET_ROOT, "generated");
     await nodeFs.mkdir(dir, { recursive: true });
 
-    const ext = dataUri.startsWith("data:image/png") ? "png" : "jpg";
-    const file = `meme-${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
-    const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
+    const localFile = file.slice(file.lastIndexOf("/") + 1);
     await nodeFs.writeFile(
-      nodePath.join(dir, file),
-      Buffer.from(base64, "base64")
+      nodePath.join(dir, localFile),
+      image
     );
-    return `/generated/${file}`;
+    return `/generated/${localFile}`;
   } catch (err) {
     console.log(
       `[MEME AI] Could not persist image to disk (${err instanceof Error ? err.message : err}); returning inline data URI.`
