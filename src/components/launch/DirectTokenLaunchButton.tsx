@@ -74,6 +74,10 @@ export default function DirectTokenLaunchButton({ generationId, imageUrl, sugges
       }
       setStatus("CONFIRM IN WALLET");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 20 * 60);
+      // Fetch EIP-1559 fees through the site's RPC before opening the wallet.
+      // Robinhood Wallet can otherwise hang while querying fees from its own
+      // intermittently slow default RPC endpoint.
+      const fees = await publicClient.estimateFeesPerGas();
       const hash = await writeContractAsync({
         address: directLauncherAddress,
         abi: directLauncherAbi,
@@ -82,8 +86,11 @@ export default function DirectTokenLaunchButton({ generationId, imageUrl, sugges
         args: [creationId, name.trim(), symbol.trim().toUpperCase(), onChainLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
         value,
         // Robinhood Wallet can stall while estimating this atomic token + pool
-        // creation call. The official RPC estimates ~6.3m gas; keep headroom.
+        // creation call. Supply both gas limit and fees so the extension only
+        // needs to display and sign the already-prepared transaction.
         gas: 8_200_000n,
+        maxFeePerGas: fees.maxFeePerGas,
+        maxPriorityFeePerGas: fees.maxPriorityFeePerGas,
       });
       setStatus("CREATING TOKEN & POOL");
       const receipt = await publicClient.waitForTransactionReceipt({ hash, timeout: 180_000 });
