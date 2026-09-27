@@ -11,6 +11,7 @@ import { useAccount, usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { isMemeSlotConfigured, memeSlotAbi, memeSlotAddress } from "@/lib/contracts/memeSlot";
+import { directLauncherAbi, directLauncherAddress, isDirectLauncherConfigured } from "@/lib/contracts/directLauncher";
 import { ROBINHOOD_EXPLORER, robinhoodChain } from "@/lib/web3/robinhoodChain";
 
 const FILTERS = ["ALL", "COMMON", "RARE", "EPIC", "LEGENDARY", "SECRET"] as const;
@@ -20,6 +21,81 @@ const MUT_NAME = new Map(MUTATIONS.map((m) => [m.id, m.name]));
 const STYLE_NAME = new Map(STYLES.map((s) => [s.id, s.name]));
 
 const short = (value: string) => `${value.slice(0, 6)}...${value.slice(-4)}`;
+const TOKEN_LAUNCHER_START_BLOCK = 74_000_000n;
+
+function LaunchedTokens() {
+  const { address, isConnected } = useAccount();
+  const { openConnectModal } = useConnectModal();
+  const client = usePublicClient({ chainId: robinhoodChain.id });
+  const query = useQuery({
+    queryKey: ["launched-tokens", address],
+    enabled: Boolean(isConnected && address && client && isDirectLauncherConfigured),
+    queryFn: async () => {
+      if (!client || !address) return [];
+      const latest = await client.getBlockNumber();
+      const logs = [];
+      for (let fromBlock = TOKEN_LAUNCHER_START_BLOCK; fromBlock <= latest; fromBlock += 5_000n) {
+        const toBlock = fromBlock + 4_999n > latest ? latest : fromBlock + 4_999n;
+        const chunk = await client.getContractEvents({
+          address: directLauncherAddress,
+          abi: directLauncherAbi,
+          eventName: "TokenLaunched",
+          args: { creator: address },
+          fromBlock,
+          toBlock,
+        });
+        logs.push(...chunk);
+      }
+      return Promise.all(logs.reverse().map(async (log) => {
+        const token = log.args.token!;
+        const tokenAbi = [
+          { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+          { type: "function", name: "symbol", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+          { type: "function", name: "logo", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+          { type: "function", name: "description", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+        ] as const;
+        const [name, symbol, logo, description] = await Promise.all([
+          client.readContract({ address: token, abi: tokenAbi, functionName: "name" }),
+          client.readContract({ address: token, abi: tokenAbi, functionName: "symbol" }),
+          client.readContract({ address: token, abi: tokenAbi, functionName: "logo" }),
+          client.readContract({ address: token, abi: tokenAbi, functionName: "description" }),
+        ]);
+        return { token, pool: log.args.pool!, transactionHash: log.transactionHash, name, symbol, logo, description };
+      }));
+    },
+  });
+
+  return (
+    <section className="mb-14">
+      <div className="flex items-end justify-between gap-4">
+        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY LAUNCHED TOKENS</h1><p className="mt-2 text-sm text-black/50">Tradeable tokens published by this wallet on Robinhood Chain.</p></div>
+        <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-bold tracking-[0.16em] text-white"><span className="text-[#39ff14]">●</span> LIVE ONCHAIN</span>
+      </div>
+      {!isConnected ? (
+        <button onClick={openConnectModal} className="mt-8 w-full rounded-3xl border border-dashed border-black/15 bg-white py-16 text-sm font-bold tracking-[0.14em]">CONNECT WALLET TO VIEW LAUNCHED TOKENS</button>
+      ) : query.isLoading ? (
+        <div className="py-16 text-center text-sm text-black/40">READING TOKEN LAUNCHES...</div>
+      ) : query.isError ? (
+        <div className="mt-8 rounded-3xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">Could not read launched tokens. Refresh and try again.</div>
+      ) : query.data?.length ? (
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {query.data.map((item) => (
+            <article key={item.token} className="overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-card">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={item.logo} alt={item.name} className="aspect-square w-full bg-black/[0.03] object-cover" />
+              <div className="p-5">
+                <div className="flex items-start justify-between gap-3"><div><div className="font-display text-lg">{item.name}</div><div className="mt-1 text-[10px] font-bold tracking-[0.16em] text-black/45">${item.symbol}</div></div><span className="rounded-full bg-green-100 px-2.5 py-1 text-[9px] font-bold text-green-800">LIVE</span></div>
+                <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-black/50">{item.description}</p>
+                <div className="mt-4 space-y-1 text-[10px] text-black/45"><div>TOKEN · {short(item.token)}</div><div>POOL · {short(item.pool)}</div></div>
+                <div className="mt-4 grid grid-cols-2 gap-2"><a href={`${ROBINHOOD_EXPLORER}/address/${item.token}`} target="_blank" rel="noreferrer" className="rounded-full bg-black py-2.5 text-center text-[9px] font-bold tracking-[0.12em] text-white">VIEW TOKEN</a><a href={`${ROBINHOOD_EXPLORER}/tx/${item.transactionHash}`} target="_blank" rel="noreferrer" className="rounded-full border border-black/15 py-2.5 text-center text-[9px] font-bold tracking-[0.12em]">TRANSACTION</a></div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : <div className="mt-8 rounded-3xl border border-dashed border-black/15 bg-white/60 py-16 text-center text-sm text-black/45">NO TOKENS LAUNCHED BY THIS WALLET YET.</div>}
+    </section>
+  );
+}
 
 function OnchainCollection() {
   const { address, isConnected } = useAccount();
@@ -88,6 +164,7 @@ export default function CollectionPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <LaunchedTokens />
       <OnchainCollection />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
