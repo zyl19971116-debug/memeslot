@@ -22,16 +22,17 @@ const STYLE_NAME = new Map(STYLES.map((s) => [s.id, s.name]));
 
 const short = (value: string) => `${value.slice(0, 6)}...${value.slice(-4)}`;
 const TOKEN_LAUNCHER_START_BLOCK = 74_000_000n;
+const HIDDEN_LAUNCHED_TOKENS = new Set([
+  "0x5f54c20eae92e06497255cfa05ce1a75dd2648e9",
+]);
 
 function LaunchedTokens() {
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
   const client = usePublicClient({ chainId: robinhoodChain.id });
   const query = useQuery({
-    queryKey: ["launched-tokens", address],
-    enabled: Boolean(isConnected && address && client && isDirectLauncherConfigured),
+    queryKey: ["launched-tokens-public"],
+    enabled: Boolean(client && isDirectLauncherConfigured),
     queryFn: async () => {
-      if (!client || !address) return [];
+      if (!client) return [];
       const latest = await client.getBlockNumber();
       const logs = [];
       for (let fromBlock = TOKEN_LAUNCHER_START_BLOCK; fromBlock <= latest; fromBlock += 5_000n) {
@@ -40,13 +41,16 @@ function LaunchedTokens() {
           address: directLauncherAddress,
           abi: directLauncherAbi,
           eventName: "TokenLaunched",
-          args: { creator: address },
           fromBlock,
           toBlock,
         });
         logs.push(...chunk);
       }
-      return Promise.all(logs.reverse().map(async (log) => {
+      const visibleLogs = logs.filter((log) => {
+        const token = log.args.token;
+        return token && !HIDDEN_LAUNCHED_TOKENS.has(token.toLowerCase());
+      });
+      return Promise.all(visibleLogs.reverse().map(async (log) => {
         const token = log.args.token!;
         const tokenAbi = [
           { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
@@ -68,12 +72,10 @@ function LaunchedTokens() {
   return (
     <section className="mb-14">
       <div className="flex items-end justify-between gap-4">
-        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY LAUNCHED TOKENS</h1><p className="mt-2 text-sm text-black/50">Tradeable tokens published by this wallet on Robinhood Chain.</p></div>
+        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">LAUNCHED TOKENS</h1><p className="mt-2 text-sm text-black/50">All tradeable tokens published through MEME SLOT on Robinhood Chain.</p></div>
         <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-bold tracking-[0.16em] text-white"><span className="text-[#39ff14]">●</span> LIVE ONCHAIN</span>
       </div>
-      {!isConnected ? (
-        <button onClick={openConnectModal} className="mt-8 w-full rounded-3xl border border-dashed border-black/15 bg-white py-16 text-sm font-bold tracking-[0.14em]">CONNECT WALLET TO VIEW LAUNCHED TOKENS</button>
-      ) : query.isLoading ? (
+      {query.isLoading ? (
         <div className="py-16 text-center text-sm text-black/40">READING TOKEN LAUNCHES...</div>
       ) : query.isError ? (
         <div className="mt-8 rounded-3xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">Could not read launched tokens. Refresh and try again.</div>
@@ -92,7 +94,7 @@ function LaunchedTokens() {
             </article>
           ))}
         </div>
-      ) : <div className="mt-8 rounded-3xl border border-dashed border-black/15 bg-white/60 py-16 text-center text-sm text-black/45">NO TOKENS LAUNCHED BY THIS WALLET YET.</div>}
+      ) : <div className="mt-8 rounded-3xl border border-dashed border-black/15 bg-white/60 py-16 text-center text-sm text-black/45">NO TOKENS HAVE BEEN LAUNCHED YET.</div>}
     </section>
   );
 }
