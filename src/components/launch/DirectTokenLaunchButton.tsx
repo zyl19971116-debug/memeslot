@@ -39,6 +39,15 @@ export default function DirectTokenLaunchButton({ generationId, imageUrl, sugges
   const [result, setResult] = useState<{ token: string; pool: string } | null>(null);
   const busy = status === "CONFIRM IN WALLET" || status === "CREATING TOKEN & POOL";
   const absoluteLogo = useMemo(() => /^https?:\/\//.test(imageUrl) ? imageUrl : typeof window !== "undefined" ? new URL(imageUrl, window.location.origin).toString() : imageUrl, [imageUrl]);
+  const onChainLogo = useMemo(() => {
+    // Never send an inline base64 image as contract calldata. Besides being
+    // prohibitively expensive to store, very large payloads can freeze wallet
+    // confirmation UIs while they decode the transaction.
+    if (/^https?:\/\//.test(absoluteLogo) && absoluteLogo.length <= 2_048) return absoluteLogo;
+    return typeof window !== "undefined"
+      ? new URL("/assets/meme-slot/system/meme-placeholder.png", window.location.origin).toString()
+      : "https://memeslot.shop/assets/meme-slot/system/meme-placeholder.png";
+  }, [absoluteLogo]);
 
   async function launch() {
     setError(null);
@@ -70,7 +79,7 @@ export default function DirectTokenLaunchButton({ generationId, imageUrl, sugges
         abi: directLauncherAbi,
         functionName: "launch",
         chainId: robinhoodChain.id,
-        args: [creationId, name.trim(), symbol.trim().toUpperCase(), absoluteLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
+        args: [creationId, name.trim(), symbol.trim().toUpperCase(), onChainLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
         value,
         // Robinhood Wallet can stall while estimating this atomic token + pool
         // creation call. The official RPC estimates ~6.3m gas; keep headroom.
