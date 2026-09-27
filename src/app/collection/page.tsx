@@ -121,13 +121,7 @@ export default function CollectionPage() {
       <LaunchedTokens />
       <div className="mb-10 border-t border-black/10 pt-12">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY WALLET</h1>
-          <p className="mt-2 text-sm text-black/50">
-            Tokens launched by this wallet and memes saved to your collection.
-          </p>
-        </div>
-        <div className="rounded-2xl border border-black/10 bg-white px-5 py-3 text-center shadow-card">
+        <div className="ml-auto rounded-2xl border border-black/10 bg-white px-5 py-3 text-center shadow-card">
           <div className="text-[10px] font-bold tracking-[0.25em] text-black/40">DISCOVERED</div>
           <div className="font-display text-2xl">
             {discoveries.length} <span className="text-black/30">/ ???</span>
