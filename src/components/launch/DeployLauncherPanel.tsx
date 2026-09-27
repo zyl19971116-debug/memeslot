@@ -27,7 +27,15 @@ export default function DeployLauncherPanel() {
     if (!client) return;
     try {
       setBusy(true);
-      const hash = await deployContractAsync({ abi: constructorAbi, bytecode: memeSlotTokenLauncherBytecode, args: [POSITION_MANAGER, WETH], chainId: robinhoodChain.id });
+      const hash = await deployContractAsync({
+        abi: constructorAbi,
+        bytecode: memeSlotTokenLauncherBytecode,
+        args: [POSITION_MANAGER, WETH],
+        chainId: robinhoodChain.id,
+        // Robinhood Wallet currently fails to estimate this contract creation
+        // even though the official RPC estimates ~2.21m gas successfully.
+        gas: 3_000_000n,
+      });
       const receipt = await client.waitForTransactionReceipt({ hash, timeout: 180_000 });
       if (receipt.status !== "success" || !receipt.contractAddress) throw new Error("Deployment reverted.");
       setContractAddress(receipt.contractAddress);
