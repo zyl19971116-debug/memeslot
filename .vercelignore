@@ -1,0 +1,9 @@
+.git
+.next
+artifacts
+cache
+coverage
+node_modules
+typechain-types
+_gen
+deployment

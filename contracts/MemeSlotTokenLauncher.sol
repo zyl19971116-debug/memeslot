@@ -82,11 +82,13 @@ contract MemeSlotTokenLauncher is ReentrancyGuard {
 
     INonfungiblePositionManager public immutable positionManager;
     IWETH9 public immutable weth;
+    mapping(bytes32 creationId => address token) public tokenForCreation;
 
     event TokenLaunched(
         address indexed token,
         address indexed pool,
         address indexed creator,
+        bytes32 creationId,
         uint256 positionId,
         uint128 liquidity,
         uint256 ethLiquidity
@@ -94,6 +96,7 @@ contract MemeSlotTokenLauncher is ReentrancyGuard {
 
     error InvalidInput();
     error LiquidityRequired();
+    error CreationAlreadyLaunched(bytes32 creationId, address token);
 
     constructor(address positionManager_, address weth_) {
         if (positionManager_ == address(0) || weth_ == address(0)) revert InvalidInput();
@@ -102,6 +105,7 @@ contract MemeSlotTokenLauncher is ReentrancyGuard {
     }
 
     function launch(
+        bytes32 creationId,
         string calldata name_,
         string calldata symbol_,
         string calldata logo_,
@@ -111,13 +115,16 @@ contract MemeSlotTokenLauncher is ReentrancyGuard {
         uint256 amount1Min,
         uint256 deadline
     ) external payable nonReentrant returns (address token, address pool, uint256 positionId) {
-        if (bytes(name_).length == 0 || bytes(symbol_).length == 0) revert InvalidInput();
+        if (creationId == bytes32(0) || bytes(name_).length == 0 || bytes(symbol_).length == 0) revert InvalidInput();
         if (msg.value == 0) revert LiquidityRequired();
+        address existingToken = tokenForCreation[creationId];
+        if (existingToken != address(0)) revert CreationAlreadyLaunched(creationId, existingToken);
 
         MemeSlotToken launched = new MemeSlotToken(
             name_, symbol_, logo_, description_, socials_, msg.sender, SUPPLY
         );
         token = address(launched);
+        tokenForCreation[creationId] = token;
         address token0 = token < address(weth) ? token : address(weth);
         address token1 = token < address(weth) ? address(weth) : token;
         uint256 ratioX128 = token0 == token
@@ -160,7 +167,7 @@ contract MemeSlotTokenLauncher is ReentrancyGuard {
         uint256 wethLeft = weth.balanceOf(address(this));
         if (wethLeft > 0) require(weth.transfer(msg.sender, wethLeft));
 
-        emit TokenLaunched(token, pool, msg.sender, positionId, liquidity, msg.value);
+        emit TokenLaunched(token, pool, msg.sender, creationId, positionId, liquidity, msg.value);
     }
 
     function _sqrt(uint256 x) private pure returns (uint256 z) {

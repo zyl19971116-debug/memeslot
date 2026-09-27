@@ -40,6 +40,7 @@ export default function ResultReveal() {
     result,
     aiStatus,
     aiImageUrl,
+    generationId,
     aiFallback,
     aiError,
     savedThisSpin,
@@ -147,6 +148,7 @@ export default function ResultReveal() {
               <div className="mt-5 grid grid-cols-2 gap-2">
                 {isAi && (
                   <DirectTokenLaunchButton
+                    generationId={generationId}
                     imageUrl={displayImage}
                     suggestedName={result.name}
                     description={`${result.comboDisplay}. ${result.description}`}

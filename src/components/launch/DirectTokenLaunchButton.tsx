@@ -2,12 +2,12 @@
 
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { useMemo, useState } from "react";
-import { decodeEventLog, parseEther } from "viem";
+import { decodeEventLog, keccak256, parseEther, stringToHex, zeroAddress } from "viem";
 import { useAccount, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { directLauncherAbi, directLauncherAddress, isDirectLauncherConfigured } from "@/lib/contracts/directLauncher";
 import { robinhoodChain } from "@/lib/web3/robinhoodChain";
 
-interface Props { imageUrl: string; suggestedName: string; description: string; }
+interface Props { generationId: string | null; imageUrl: string; suggestedName: string; description: string; }
 type Status = "REVIEW LAUNCH" | "CONFIRM IN WALLET" | "CREATING TOKEN & POOL" | "LAUNCHED" | "FAILED";
 
 function symbolFromName(name: string) {
@@ -21,7 +21,7 @@ function friendlyError(error: unknown) {
   return message.length > 180 ? "The launch transaction failed. No completed launch was recorded." : message;
 }
 
-export default function DirectTokenLaunchButton({ imageUrl, suggestedName, description }: Props) {
+export default function DirectTokenLaunchButton({ generationId, imageUrl, suggestedName, description }: Props) {
   const { address, isConnected, chainId } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { switchChainAsync } = useSwitchChain();
@@ -48,12 +48,21 @@ export default function DirectTokenLaunchButton({ imageUrl, suggestedName, descr
       return;
     }
     if (!isDirectLauncherConfigured) { setStatus("FAILED"); setError("The MEME SLOT launcher contract is not configured yet."); return; }
+    if (!generationId) { setStatus("FAILED"); setError("This result has no verified generation ID. Generate a new image before launching."); return; }
     if (!accepted) { setError("Confirm the irreversible launch terms first."); return; }
     if (!name.trim() || !symbol.trim()) { setError("Token name and symbol are required."); return; }
     let value: bigint;
     try { value = parseEther(liquidityEth); } catch { setError("Enter a valid ETH liquidity amount."); return; }
     if (value < parseEther("0.001")) { setError("Initial liquidity must be at least 0.001 ETH."); return; }
     try {
+      if (!publicClient) throw new Error("Robinhood Chain RPC unavailable.");
+      const creationId = keccak256(stringToHex(generationId));
+      const existingToken = await publicClient.readContract({ address: directLauncherAddress, abi: directLauncherAbi, functionName: "tokenForCreation", args: [creationId] });
+      if (existingToken !== zeroAddress) {
+        setStatus("FAILED");
+        setError(`This generated meme has already launched as ${existingToken}.`);
+        return;
+      }
       setStatus("CONFIRM IN WALLET");
       const deadline = BigInt(Math.floor(Date.now() / 1000) + 20 * 60);
       const hash = await writeContractAsync({
@@ -61,14 +70,13 @@ export default function DirectTokenLaunchButton({ imageUrl, suggestedName, descr
         abi: directLauncherAbi,
         functionName: "launch",
         chainId: robinhoodChain.id,
-        args: [name.trim(), symbol.trim().toUpperCase(), absoluteLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
+        args: [creationId, name.trim(), symbol.trim().toUpperCase(), absoluteLogo, description.slice(0, 500), { twitter: twitter.trim(), website: website.trim() }, 0n, 0n, deadline],
         value,
         // Robinhood Wallet can stall while estimating this atomic token + pool
         // creation call. The official RPC estimates ~6.3m gas; keep headroom.
         gas: 8_200_000n,
       });
       setStatus("CREATING TOKEN & POOL");
-      if (!publicClient) throw new Error("Robinhood Chain RPC unavailable.");
       const receipt = await publicClient.waitForTransactionReceipt({ hash, timeout: 180_000 });
       if (receipt.status !== "success") throw new Error("Launch transaction reverted.");
       for (const log of receipt.logs) {
