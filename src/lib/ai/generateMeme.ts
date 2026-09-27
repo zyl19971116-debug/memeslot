@@ -185,16 +185,20 @@ export async function generateMeme(
       }
       console.log("[MEME AI] Assets read (3 reference images, QuickRouter mode)");
 
-      const call = generateMemeQuickRouter({ prompt, imageUris });
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("TIMEOUT")), GENERATION_TIMEOUT_MS)
-      );
-
       try {
-        const { imageUrl, model } = (await Promise.race([
-          call,
-          timeout,
-        ])) as { imageUrl: string; model: string };
+        let generated: { imageUrl: string; model: string } | null = null;
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= 2 && !generated; attempt += 1) {
+          try {
+            generated = await generateMemeQuickRouter({ prompt, imageUris });
+          } catch (err) {
+            lastError = err;
+            console.log(`[MEME AI] QuickRouter attempt ${attempt} failed`);
+            if (attempt < 2) await new Promise((resolve) => setTimeout(resolve, 750));
+          }
+        }
+        if (!generated) throw lastError instanceof Error ? lastError : new Error("GENERATION_FAILED");
+        const { imageUrl, model } = generated;
         console.log(`[MEME AI] Generation completed: ${imageUrl.slice(0, 64)}...`);
         return {
           success: true,
