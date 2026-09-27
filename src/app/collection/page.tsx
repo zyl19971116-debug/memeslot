@@ -7,10 +7,8 @@ import { CHARACTERS } from "@/data/characters";
 import { MUTATIONS } from "@/data/mutations";
 import { STYLES } from "@/data/styles";
 import { PLACEHOLDER_IMAGE, type Rarity } from "@/data/base";
-import { useAccount, usePublicClient } from "wagmi";
+import { usePublicClient } from "wagmi";
 import { useQuery } from "@tanstack/react-query";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { isMemeSlotConfigured, memeSlotAbi, memeSlotAddress } from "@/lib/contracts/memeSlot";
 import { directLauncherAbi, directLauncherAddress, isDirectLauncherConfigured } from "@/lib/contracts/directLauncher";
 import { ROBINHOOD_EXPLORER, robinhoodChain } from "@/lib/web3/robinhoodChain";
 
@@ -99,56 +97,6 @@ function LaunchedTokens() {
   );
 }
 
-function OnchainCollection() {
-  const { address, isConnected } = useAccount();
-  const { openConnectModal } = useConnectModal();
-  const client = usePublicClient({ chainId: robinhoodChain.id });
-  const query = useQuery({
-    queryKey: ["onchain-memes", address],
-    enabled: Boolean(isConnected && address && client && isMemeSlotConfigured),
-    queryFn: async () => {
-      if (!client || !address) return [];
-      const logs = await client.getContractEvents({
-        address: memeSlotAddress, abi: memeSlotAbi, eventName: "MemeMinted", args: { creator: address }, fromBlock: 0n,
-      });
-      const owned = await Promise.all(logs.map(async (log) => {
-        const tokenId = log.args.tokenId!;
-        const owner = await client.readContract({ address: memeSlotAddress, abi: memeSlotAbi, functionName: "ownerOf", args: [tokenId] });
-        return owner.toLowerCase() === address.toLowerCase() ? { tokenId, owner, ...log.args } : null;
-      }));
-      return owned.filter(Boolean).reverse();
-    },
-  });
-
-  return (
-    <section className="mb-14">
-      <div className="flex items-end justify-between gap-4">
-        <div><h1 className="font-display text-3xl tracking-tight sm:text-4xl">ONCHAIN MEMES</h1><p className="mt-2 text-sm text-black/50">Ownership read from Robinhood Chain.</p></div>
-        <span className="rounded-full bg-black px-3 py-1.5 text-[10px] font-bold tracking-[0.16em] text-white"><span className="text-[#39ff14]">●</span> ROBINHOOD CHAIN</span>
-      </div>
-      {!isConnected ? (
-        <button onClick={openConnectModal} className="mt-8 w-full rounded-3xl border border-dashed border-black/15 bg-white py-16 text-sm font-bold tracking-[0.14em]">CONNECT WALLET TO VIEW YOUR MEMES</button>
-      ) : !isMemeSlotConfigured ? (
-        <div className="mt-8 rounded-3xl border border-amber-300 bg-amber-50 px-6 py-10 text-center text-sm text-amber-900">Set NEXT_PUBLIC_MEME_SLOT_CONTRACT_ADDRESS after the testnet deployment.</div>
-      ) : query.isLoading ? (
-        <div className="py-16 text-center text-sm text-black/40">READING ROBINHOOD CHAIN...</div>
-      ) : query.isError ? (
-        <div className="mt-8 rounded-3xl border border-red-200 bg-red-50 px-6 py-10 text-center text-sm text-red-700">Could not read the contract. Check the RPC and contract address.</div>
-      ) : query.data?.length ? (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {query.data.map((meme) => meme && (
-            <article key={String(meme.tokenId)} className="overflow-hidden rounded-[28px] border border-black/5 bg-white shadow-card">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={meme.imageURI} alt={`${meme.mutation} ${meme.character}`} className="aspect-square w-full object-cover" />
-              <div className="p-5"><div className="font-display text-lg">{meme.world} {meme.mutation} {meme.character}</div><div className="mt-2 text-[10px] font-bold tracking-[0.12em] text-black/45">{meme.character} · {meme.mutation} · {meme.world}</div><div className="mt-3 flex justify-between text-xs"><span>TOKEN #{String(meme.tokenId)}</span><span>{short(meme.owner)}</span></div><a href={`${ROBINHOOD_EXPLORER}/token/${memeSlotAddress}/instance/${meme.tokenId}`} target="_blank" rel="noreferrer" className="mt-4 block rounded-full bg-black py-2.5 text-center text-[10px] font-bold tracking-[0.15em] text-white">VIEW ONCHAIN</a></div>
-            </article>
-          ))}
-        </div>
-      ) : <div className="mt-8 rounded-3xl border border-dashed border-black/15 bg-white/60 py-16 text-center text-sm text-black/45">NO ONCHAIN MEMES OWNED BY THIS WALLET.</div>}
-    </section>
-  );
-}
-
 export default function CollectionPage() {
   const discoveries = useDiscoveryStore((s) => s.discoveries);
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("ALL");
@@ -167,7 +115,6 @@ export default function CollectionPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
       <LaunchedTokens />
-      <OnchainCollection />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl tracking-tight sm:text-4xl">MY CREATIONS</h1>
